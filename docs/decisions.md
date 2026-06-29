@@ -106,3 +106,39 @@ Verification evidence:
 
 - `ruby -Itest test/context_pack_builder_test.rb`
 - `bin/context-pack-builder ../eval-harness --workspace-output`
+
+## 2026-06-29 - Publish The Tooling Asset Under MIT
+
+Context: `context-pack-builder` is a public reusable tooling asset in the
+workspace. Without an explicit license, other repos, reviewers, and cheap-model
+operator flows can inspect the code but still inherit avoidable ambiguity about
+reuse and adaptation.
+
+Options considered:
+
+- leave the repo unlicensed
+- use a more restrictive or reciprocal license
+- publish under MIT
+
+Choice: publish under MIT.
+
+Pros:
+
+- makes reuse and study explicit for the whole tooling lane
+- matches the low-friction copy-and-adapt nature of this local CLI
+- removes legal ambiguity from review packets and downstream examples
+
+Cons:
+
+- allows broad reuse with limited reciprocity
+- does not require contribution-back behavior
+
+Consequences:
+
+- downstream tooling examples can treat this repo as explicitly reusable
+- publication readiness now includes an explicit legal surface, not only tests and docs
+
+Verification evidence:
+
+- `bundle exec rake test`
+- `bin/context-pack-builder .`

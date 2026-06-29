@@ -94,3 +94,7 @@ bin/context-pack-builder .
 - Add token-budget estimation.
 - Add per-stack presets for Rails, Go, Rust, and Elixir projects.
 - Feed generated packs into an `eval-harness`.
+
+## License
+
+MIT. See [LICENSE.txt](./LICENSE.txt).
