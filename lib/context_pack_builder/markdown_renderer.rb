@@ -1,9 +1,12 @@
 # frozen_string_literal: true
 
+require "json"
+
 module ContextPackBuilder
   class MarkdownRenderer
     def render(scan)
       lines = []
+      lines << metadata_comment(scan)
       lines << "# Context Pack: #{scan[:name]}"
       lines << ""
       lines << "Root: `#{scan[:root]}`"
@@ -33,6 +36,16 @@ module ContextPackBuilder
     end
 
     private
+
+    def metadata_comment(scan)
+      metadata = {
+        project: scan[:name],
+        generated_at: scan[:generated_at],
+        git_commit: scan.dig(:git, :latest_commit_sha),
+        git_branch: scan.dig(:git, :branch)
+      }
+      "<!-- context-pack-builder-meta #{JSON.generate(metadata)} -->"
+    end
 
     def bullet(label, values)
       value = values.empty? ? "_none detected_" : values.map { |item| "`#{item}`" }.join(", ")

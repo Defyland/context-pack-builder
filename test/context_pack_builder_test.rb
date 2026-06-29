@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "test_helper"
+require "shellwords"
 
 class ContextPackBuilderTest < Minitest::Test
   def test_builds_markdown_pack_with_readiness_signals_and_file_excerpts
@@ -9,6 +10,7 @@ class ContextPackBuilderTest < Minitest::Test
 
       markdown = ContextPackBuilder::Builder.new(project_root: dir, max_file_chars: 80).build
 
+      assert_match(/^<!-- context-pack-builder-meta \{.*"project":"#{File.basename(dir)}".*\} -->$/, markdown.lines.first.chomp)
       assert_includes markdown, "# Context Pack: #{File.basename(dir)}"
       assert_includes markdown, "- Manifests: `Gemfile`, `Rakefile`, `railway.json`, `openapi.yaml`"
       assert_includes markdown, "`docs/adr/0001-keep-cli-small.md`"
@@ -59,6 +61,25 @@ class ContextPackBuilderTest < Minitest::Test
     end
   end
 
+  def test_cli_can_write_to_workspace_context_pack_path
+    Dir.mktmpdir do |workspace|
+      FileUtils.mkdir_p(File.join(workspace, ".agents/context-packs"))
+      project = File.join(workspace, "sample-tool")
+      write_project(project)
+      stdout = StringIO.new
+      stderr = StringIO.new
+
+      status = ContextPackBuilder::CLI.new([project, "--workspace-output"], stdout: stdout, stderr: stderr).call
+
+      assert_equal 0, status
+      output = File.join(workspace, ".agents/context-packs", "sample-tool.md")
+      assert File.file?(output)
+      assert_includes File.read(output), "# Context Pack: sample-tool"
+      assert_includes stdout.string, "Wrote #{output}"
+      assert_empty stderr.string
+    end
+  end
+
   def test_cli_requires_project_path
     stdout = StringIO.new
     stderr = StringIO.new
@@ -70,7 +91,27 @@ class ContextPackBuilderTest < Minitest::Test
     assert_empty stdout.string
   end
 
+  def test_embeds_latest_git_commit_in_metadata_when_repo_is_initialized
+    Dir.mktmpdir do |dir|
+      write_project(dir)
+      init_git_repo(dir)
+      system("git", "-C", dir, "add", ".")
+      system("git", "-C", dir, "commit", "-m", "Initial import", out: File::NULL, err: File::NULL)
+      commit_sha = `git -C #{Shellwords.escape(dir)} rev-parse HEAD`.strip
+
+      markdown = ContextPackBuilder::Builder.new(project_root: dir).build
+
+      assert_includes markdown.lines.first, %("git_commit":"#{commit_sha}")
+    end
+  end
+
   private
+
+  def init_git_repo(dir)
+    system("git", "-C", dir, "init", "-q")
+    system("git", "-C", dir, "config", "user.name", "Context Pack Builder")
+    system("git", "-C", dir, "config", "user.email", "context-pack@example.com")
+  end
 
   def write_project(dir)
     FileUtils.mkdir_p(File.join(dir, ".github/workflows"))

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "find"
+require "time"
 
 module ContextPackBuilder
   class ProjectScan
@@ -36,18 +37,21 @@ module ContextPackBuilder
     ].freeze
 
     CONTRACT_GLOBS = [
+      "**/test/**/*_test.rb",
+      "**/spec/**/*_spec.rb",
       "test/**/*_test.rb",
       "test/**/*_spec.rb",
       "spec/**/*_spec.rb",
       "tests/**/*_test.rb",
-      "test/**/*_test.go",
-      "tests/**/*_test.go",
-      "internal/**/*_test.go",
-      "pkg/**/*_test.go",
-      "cmd/**/*_test.go",
-      "test/**/*_test.exs",
-      "tests/**/*_test.exs",
+      "**/*_test.go",
+      "**/*_test.exs",
+      "**/*_test.ex",
       "tests/**/*.rs"
+    ].freeze
+
+    ROOT_CONTRACT_FILES = %w[
+      bin/check
+      bin/ci
     ].freeze
 
     MAX_CONTRACT_FILES = 4
@@ -60,9 +64,11 @@ module ContextPackBuilder
     end
 
     def to_h
+      git = GitSnapshot.new(@project_root).to_h
       {
         name: File.basename(@project_root),
         root: @project_root,
+        generated_at: Time.now.utc.iso8601,
         manifests: existing(MANIFESTS),
         docs: doc_files,
         ci: ci_files,
@@ -70,7 +76,7 @@ module ContextPackBuilder
         sensitive_file_warnings: sensitive_file_warnings,
         command_snippets: command_snippets,
         files: selected_files,
-        git: GitSnapshot.new(@project_root).to_h
+        git: git
       }
     end
 
@@ -91,7 +97,8 @@ module ContextPackBuilder
     end
 
     def contract_files
-      globbed_files(CONTRACT_GLOBS)
+      (existing(ROOT_CONTRACT_FILES) + globbed_files(CONTRACT_GLOBS))
+        .uniq
         .sort_by { |path| [path.count(File::SEPARATOR), path.length, path] }
         .first(MAX_CONTRACT_FILES)
     end

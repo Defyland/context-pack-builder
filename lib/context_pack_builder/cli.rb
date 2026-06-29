@@ -5,6 +5,8 @@ require "optparse"
 
 module ContextPackBuilder
   class CLI
+    CONTEXT_PACKS_DIR = File.join(".agents", "context-packs").freeze
+
     def initialize(argv, stdout:, stderr:)
       @argv = argv
       @stdout = stdout
@@ -39,6 +41,13 @@ module ContextPackBuilder
       options_from_parser[:project_root] ||= @argv.shift
       options_from_parser[:max_file_chars] ||= 4_000
       raise KeyError, "project path is required" unless options_from_parser[:project_root]
+      if options_from_parser[:output] && options_from_parser[:workspace_output]
+        raise KeyError, "--output and --workspace-output cannot be used together"
+      end
+
+      if options_from_parser[:workspace_output]
+        options_from_parser[:output] = workspace_output_path(options_from_parser[:project_root])
+      end
 
       options_from_parser
     end
@@ -52,11 +61,33 @@ module ContextPackBuilder
         opts.on("--max-file-chars N", Integer, "Maximum characters copied per file") do |value|
           (@options ||= {})[:max_file_chars] = value
         end
+        opts.on("--workspace-output", "Write to the nearest .agents/context-packs/<project>.md") do
+          (@options ||= {})[:workspace_output] = true
+        end
       end
     end
 
     def options_from_parser
       @options ||= {}
+    end
+
+    def workspace_output_path(project_root)
+      project_root = File.expand_path(project_root)
+      current = project_root
+
+      loop do
+        context_packs_dir = File.join(current, CONTEXT_PACKS_DIR)
+        if File.directory?(context_packs_dir)
+          return File.join(context_packs_dir, "#{File.basename(project_root)}.md")
+        end
+
+        parent = File.dirname(current)
+        break if parent == current
+
+        current = parent
+      end
+
+      raise KeyError, "no workspace context-pack directory found above #{project_root}"
     end
   end
 end

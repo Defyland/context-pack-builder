@@ -14,6 +14,7 @@ module ContextPackBuilder
       {
         available: true,
         branch: capture("git", "branch", "--show-current").strip,
+        latest_commit_sha: capture("git", "log", "-1", "--format=%H").strip,
         status: capture("git", "status", "--short").lines.map(&:chomp),
         recent_commits: capture("git", "log", "--oneline", "-n", "8").lines.map(&:chomp)
       }

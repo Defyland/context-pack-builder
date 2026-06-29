@@ -73,3 +73,36 @@ Verification evidence:
 
 - `bundle exec rake test`
 - `bin/context-pack-builder ../rails_doctor`
+
+## 2026-06-29 - Stamp Context Packs With Source Commit Provenance
+
+Context: `eval-harness` needs a freshness signal that is more reliable than filesystem mtime alone. Workspace context packs also need a cheap standard write path so refreshing them does not require repeating long manual output paths.
+
+Options considered:
+
+- Keep freshness based only on pack file mtime.
+- Build a separate registry database for generated packs.
+- Emit source-commit provenance in the Markdown pack itself and add a workspace-output mode that writes to the nearest `.agents/context-packs` registry.
+
+Choice: Emit provenance metadata in the pack comment and support `--workspace-output`.
+
+Pros:
+
+- Freshness checks can compare the pack against the exact latest commit instead of only the file timestamp.
+- Workspace refresh becomes a one-flag command instead of hand-writing output paths.
+- The metadata stays inside the artifact that downstream tooling already consumes.
+
+Cons:
+
+- Older packs without metadata still need a fallback heuristic.
+- The metadata comment adds a small non-content line to the artifact.
+
+Consequences:
+
+- `eval-harness` can trust explicit commit provenance when it exists and fall back to mtime only for legacy packs.
+- Regenerating missing or stale workspace packs becomes cheap enough to use routinely after commits.
+
+Verification evidence:
+
+- `ruby -Itest test/context_pack_builder_test.rb`
+- `bin/context-pack-builder ../eval-harness --workspace-output`

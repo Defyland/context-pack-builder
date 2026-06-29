@@ -41,6 +41,12 @@ Write a context pack to a file:
 bin/context-pack-builder ../rails_doctor --output tmp/rails_doctor.context.md
 ```
 
+Write directly to the nearest workspace registry:
+
+```sh
+bin/context-pack-builder ../rails_doctor --workspace-output
+```
+
 Limit copied content per selected file:
 
 ```sh
@@ -51,10 +57,11 @@ bin/context-pack-builder ../rails_doctor --max-file-chars 2000
 
 The Markdown output contains:
 
-1. readiness signals for manifests, docs, CI, and sensitive file warnings;
-2. git snapshot with current branch, dirty status, and recent commits;
-3. README command snippets;
-4. selected docs, ADRs, manifests, and representative contract tests with truncation markers.
+1. a metadata comment with generation time and latest source commit when Git is available;
+2. readiness signals for manifests, docs, CI, and sensitive file warnings;
+3. git snapshot with current branch, dirty status, and recent commits;
+4. README command snippets;
+5. selected docs, ADRs, manifests, and representative contract tests with truncation markers.
 
 The output is not a secret scanner and not a full static analyzer. It is a context primitive for later tooling.
 
@@ -77,6 +84,7 @@ bin/context-pack-builder .
 - Markdown is the first output format because it is directly pasteable into model context.
 - The scanner reads a curated set of high-signal files instead of recursively summarizing everything.
 - Contract evidence comes from a small test-file sample rather than a full source-code dump.
+- Generated packs now carry explicit source-commit provenance so freshness checks do not rely only on file mtimes.
 - Sensitive files are warned about, not copied.
 - The implementation uses Ruby standard library plus Minitest/Rake for a small maintenance surface.
 
