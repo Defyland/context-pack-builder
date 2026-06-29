@@ -13,6 +13,7 @@ module ContextPackBuilder
       lines << bullet("Manifests", scan[:manifests])
       lines << bullet("Docs", scan[:docs])
       lines << bullet("CI", scan[:ci])
+      lines << bullet("Contract files", scan[:contract_files])
       lines << bullet("Sensitive file warnings", scan[:sensitive_file_warnings])
       lines << ""
       lines << "## Git Snapshot"

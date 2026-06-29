@@ -37,3 +37,39 @@ Verification evidence:
 
 - `bundle exec rake test`
 - `bin/context-pack-builder .`
+
+## 2026-06-29 - Include Curated Contract Evidence In Context Packs
+
+Context: The first version captured project prose, manifests, and CI, but small models still had to guess how behavior was proven. For this workspace, executable tests and ADRs are part of the operating context, especially when the goal is safer AI-assisted changes.
+
+Options considered:
+
+- Keep packs focused on prose and manifests only.
+- Summarize arbitrary source trees.
+- Include a curated set of ADRs and representative contract tests.
+
+Choice: Include ADR files and a small capped set of high-signal contract tests.
+
+Pros:
+
+- Gives models direct examples of executable behavior without dumping the whole repository.
+- Surfaces decision history that often explains why tests and interfaces look the way they do.
+- Keeps output bounded enough for cheap-model context windows.
+- Works across the Ruby, Go, Rust, and Elixir projects in this workspace with simple heuristics.
+
+Cons:
+
+- File-pattern heuristics will miss some stack-specific test shapes.
+- A capped sample can omit lower-priority tests.
+- This is still a curated context artifact, not full-code understanding.
+
+Consequences:
+
+- The builder now treats ADRs and contract tests as first-class context surfaces.
+- Future stack presets can improve which contract files are selected without changing the Markdown contract.
+- `eval-harness` remains the place for readiness gating; the builder only packages evidence.
+
+Verification evidence:
+
+- `bundle exec rake test`
+- `bin/context-pack-builder ../rails_doctor`

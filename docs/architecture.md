@@ -5,7 +5,7 @@
 The implementation has five small pieces:
 
 - `CLI`: parses project path, output path, and file budget.
-- `ProjectScan`: detects high-signal files, README command snippets, CI files, sensitive-file warnings, and Git state.
+- `ProjectScan`: detects high-signal docs, ADRs, representative contract tests, README command snippets, CI files, sensitive-file warnings, and Git state.
 - `FileBudget`: reads selected files with a per-file character cap and omits common local/generated/sensitive paths.
 - `GitSnapshot`: records branch, dirty status, and recent commits.
 - `MarkdownRenderer`: renders the scan into a pasteable context pack for AI models.
@@ -24,6 +24,6 @@ flowchart LR
 
 ## Boundary
 
-The builder does not summarize arbitrary source code, execute project commands, or inspect secret values. It selects the files that normally define operating context: README, decisions, architecture, case study, learning journal, manifests, CI, OpenAPI, Docker, and Railway files.
+The builder does not summarize arbitrary source code, execute project commands, or inspect secret values. It selects the files that normally define operating context: README, decisions, ADRs, architecture, case study, learning journal, manifests, CI, OpenAPI, Docker, Railway files, and a small sample of contract tests.
 
 Sensitive file handling is filename-based. The builder warns when common sensitive local files exist, but it is not a complete secret scanner.

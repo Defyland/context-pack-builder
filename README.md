@@ -5,10 +5,11 @@
 It scans the teaching and operating surfaces that matter most:
 
 - README and key docs
-- architecture, decisions, case study, and learning journal files
+- architecture, decisions, ADR, case study, and learning journal files
 - manifests such as `Gemfile`, `go.mod`, `Cargo.toml`, `mix.exs`, `Dockerfile`, `railway.json`, and OpenAPI files
 - GitHub Actions workflows
 - command snippets from README fenced shell blocks
+- a curated set of high-signal contract tests
 - git branch, dirty status, and recent commits
 - warnings for sensitive files such as `.env`, `config/master.key`, and `.kamal/secrets`
 
@@ -53,7 +54,7 @@ The Markdown output contains:
 1. readiness signals for manifests, docs, CI, and sensitive file warnings;
 2. git snapshot with current branch, dirty status, and recent commits;
 3. README command snippets;
-4. selected file excerpts with truncation markers.
+4. selected docs, ADRs, manifests, and representative contract tests with truncation markers.
 
 The output is not a secret scanner and not a full static analyzer. It is a context primitive for later tooling.
 
@@ -75,6 +76,7 @@ bin/context-pack-builder .
 
 - Markdown is the first output format because it is directly pasteable into model context.
 - The scanner reads a curated set of high-signal files instead of recursively summarizing everything.
+- Contract evidence comes from a small test-file sample rather than a full source-code dump.
 - Sensitive files are warned about, not copied.
 - The implementation uses Ruby standard library plus Minitest/Rake for a small maintenance surface.
 
