@@ -38,6 +38,50 @@ Verification evidence:
 - `bundle exec rake test`
 - `bin/context-pack-builder .`
 
+## 2026-06-30 - Add A Canonical Check Entrypoint And A Five-Minute Proof Path
+
+Context: `context-pack-builder` already had tests and a concise README, but it
+still asked the reviewer to infer the shortest trustworthy operating path. For
+cheap models and fast technical reviews, the repo needed one canonical local
+gate plus a short proof path that exercises both self-packaging and
+cross-repository packaging.
+
+Options considered:
+
+- keep `bundle exec rake test` as the only verification entrypoint
+- add a quick evaluation section without a canonical script
+- add `bin/check`, route CI through it, and document a five-minute proof path
+
+Choice: add `bin/check`, make CI use it, and expose a short README flow that
+proves the CLI builds real context packs.
+
+Pros:
+
+- gives humans and models one obvious command to run first
+- reduces drift between local verification and CI
+- proves the CLI contract, not only the Ruby unit tests
+- makes cross-repo reuse visible in under five minutes
+
+Cons:
+
+- adds a small shell wrapper that must stay aligned with the intended contract
+- the smoke path only proves representative artifact generation, not every
+  possible stack combination
+
+Consequences:
+
+- future verification changes should update `bin/check` first
+- CI now exercises the same contract the README recommends
+- the repo's didactic value improves because operators can see the artifact
+  boundary immediately instead of reading prose first
+
+Verification evidence:
+
+- `bundle exec rake test`
+- `bin/check`
+- `bin/context-pack-builder . --output /tmp/context-pack-builder.self.md`
+- `bin/context-pack-builder ../rails_doctor --output /tmp/rails_doctor.context.md`
+
 ## 2026-06-29 - Include Curated Contract Evidence In Context Packs
 
 Context: The first version captured project prose, manifests, and CI, but small models still had to guess how behavior was proven. For this workspace, executable tests and ADRs are part of the operating context, especially when the goal is safer AI-assisted changes.

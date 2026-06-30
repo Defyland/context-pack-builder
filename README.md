@@ -53,6 +53,37 @@ Limit copied content per selected file:
 bin/context-pack-builder ../rails_doctor --max-file-chars 2000
 ```
 
+## How to evaluate this repo in 5 minutes
+
+1. Run the standard local gate:
+
+```sh
+bin/check
+```
+
+2. Prove the builder can package itself:
+
+```sh
+bin/context-pack-builder . --output /tmp/context-pack-builder.self.md
+sed -n '1,40p' /tmp/context-pack-builder.self.md
+```
+
+3. Prove the builder can package another real workspace repo:
+
+```sh
+bin/context-pack-builder ../rails_doctor --output /tmp/rails_doctor.context.md
+sed -n '1,40p' /tmp/rails_doctor.context.md
+```
+
+What those checks prove:
+
+- `bin/check` proves the Ruby test suite passes and the CLI can materialize a
+  real context-pack artifact end to end.
+- The self-pack proves the repo exposes docs, manifests, CI, git provenance,
+  and command snippets in the expected contract shape.
+- The `rails_doctor` pack proves this is a reusable cross-repo tool, not only a
+  self-demo.
+
 ## Output Contract
 
 The Markdown output contains:
@@ -67,13 +98,19 @@ The output is not a secret scanner and not a full static analyzer. It is a conte
 
 ## Development
 
-Run tests:
+Run the standard local gate:
+
+```sh
+bin/check
+```
+
+Run the narrower Ruby test suite directly:
 
 ```sh
 bundle exec rake test
 ```
 
-Run the CLI against this project:
+Run the CLI against this project without the test suite:
 
 ```sh
 bin/context-pack-builder .

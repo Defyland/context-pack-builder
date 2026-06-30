@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+output_path=/tmp/context-pack-builder.check.md
+
+bundle exec rake test
+bin/context-pack-builder . --output "$output_path" >/dev/null
+test -s "$output_path"
